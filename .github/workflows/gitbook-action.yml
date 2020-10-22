@@ -5,6 +5,11 @@ on:
       - master
       - release/*
   workflow_dispatch:
+    inputs:
+      publish_remove_last_build:
+        description: 'Gitbook Action publish_remove_last_build'
+        required: true
+        default: 'false'
 
 jobs:
   build:
@@ -16,7 +21,8 @@ jobs:
       run: |
         raw=$(git branch -r --contains ${{ github.ref }})
         branch=${raw/  origin\/}
-        pubdir=${branch////-}
+        pubdir=${branch/master/draft}
+        pubdir=${pubdir////-}
         echo "ON_PUSH_BRANCH_NAME=$branch" >> $GITHUB_ENV
         echo "ON_PUSH_PUBDIR=$pubdir" >> $GITHUB_ENV
     - name: Gitbook Action
@@ -26,7 +32,13 @@ jobs:
         source_branch: ${{env.ON_PUSH_BRANCH_NAME}}
         publish_branch: gh-pages
         publish_dir: ${{env.ON_PUSH_PUBDIR}}
-        publish_remove_last_build: false
+        publish_remove_last_build: ${{ github.event.inputs.publish_remove_last_build }}
         gitbook_pdf: true
+        gitbook_pdf_dir: /
+        gitbook_pdf_name: ${{ github.event.repository.name }}-${{env.ON_PUSH_PUBDIR}}
         gitbook_epub: true
+        gitbook_epub_dir: /
+        gitbook_epub_name: ${{ github.event.repository.name }}-${{env.ON_PUSH_PUBDIR}}
         gitbook_mobi: true
+        gitbook_mobi_dir: /
+        gitbook_mobi_name: ${{ github.event.repository.name }}-${{env.ON_PUSH_PUBDIR}}
